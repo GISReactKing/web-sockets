@@ -1,0 +1,148 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Web Socket starter</title>
+    <style>
+         <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Tangerine">
+
+        body{
+            background: #f9f9f9;
+        font-family: 'Tangerine', serif;
+            font-size: 16px;
+        }
+        
+        #container{
+            width:600px;
+            margin:0 auto;
+        }
+        
+        #chatWindow{
+            height: 337px;
+        }
+        
+        #mainWrapper{
+                                     display: none;
+
+        }
+        
+        #chatWrapper{
+            float: left;
+            border: 1px #ccc solid;
+            border-radius: 7px;
+            background: #f4f4f4;
+            padding: 7px;
+        }
+        
+        #userWrapper{
+             float: left;
+            border: 1px #ccc solid;
+            border-radius: 7px;
+            background: #f4f4f4;
+            padding: 7px;
+            width: 178px;
+            margin-left: 30px;
+            max-height: 200px;
+        }
+        
+         #namesWrapper{
+             float: left;
+            border: 1px #ccc solid;
+            border-radius: 7px;
+            background: #f4f4f4;
+            padding: 7px;
+            width: 600px;
+            margin-left: 20px;
+            max-height: 200px;
+
+        }
+        
+        input{
+            height: 30px
+        }
+    </style>
+
+</head>
+<body>
+       <div id="container">
+           <div id="namesWrapper">
+               <h2>ChatRR</h2>
+               <p>Create Username</p>
+               <div id="error"></div>
+               <form id="usernameForm">
+                   <input size="37" id="username">
+                   <input type="submit" value="Submit">
+               </form>
+           </div>
+       </div>
+       
+       <div id="mainWrapper">
+           <h2>ChatRR</h2>
+            <div id="chatWrapper">
+                <div id="chatWindow">
+                </div>
+                <form id="messageForm" >
+                    <input size="37" id="message" placeholder="Enter anything.....  ">
+                    <input type="submit" value="Chat!!">
+                </form>
+            </div>
+            <div id="userWrapper">
+                <div id="users"></div>
+            </div>
+            
+            
+       </div>
+       
+       <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+       
+<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+       
+       <script>
+           
+           $(function(){
+               var socket = io.connect();
+              // console.log(socket);
+               
+               var $messageForm = $('#messageForm');
+               var $message = $('#message');
+               var chat = $('#chatWindow');
+               var $usernameForm = $('#usernameForm');
+               var $users = $('#users');
+               var $username = $('#username');
+               
+               $usernameForm.submit(function(e){
+                   e.preventDefault();
+                   socket.emit('new user', $username.val(), function(data){
+                       if(data){
+                           $('#namesWrapper').hide();
+                           $('#mainWrapper').show();
+                       }else{
+                           $error.html('Username already in taken');
+                       }
+                   });
+                   $username.val('');
+               });
+               
+               socket.on('usernames', function(data){
+                   var html = "";
+                   for (i = 0; i< data.length; i++){
+                        html+= data[i] + '<br/>';
+                   }
+                   $users.html(html);
+               })
+               
+               $messageForm.submit(function(e){
+                   e.preventDefault();
+                   socket.emit('send message', $message.val());
+                   $message.val('');
+               });
+               
+               socket.on('new message', function(data){
+                   chat.append('<strong>'+ data.user + '</strong>:  '+data.msg+'<br/>')
+               })
+           })
+           
+    
+    </script>
+    
+</body>
+</html>
